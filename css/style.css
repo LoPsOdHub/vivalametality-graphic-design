@@ -357,6 +357,43 @@ button { font: inherit; color: inherit; }
   text-wrap: balance;
 }
 
+/* Cross-link to the fine-art portfolio (a separate site) — echoes .stamp's
+   boxed-label treatment so it reads as part of the same system, but sized
+   as a real button since it's the hero's one deliberate call to action.
+   .hero__text above has pointer-events:none (it overlays the model, which
+   needs the clicks), so this needs its own pointer-events:auto. */
+.hero__portfolio-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 18px;
+  padding: 10px 14px;
+  border: 1.5px solid var(--ink);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--ink);
+  pointer-events: auto;
+  transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+.hero__portfolio-link span { transition: transform 0.2s ease; }
+.hero__portfolio-link:hover,
+.hero__portfolio-link:focus-visible {
+  background: var(--ink);
+  color: var(--paper);
+}
+.hero__portfolio-link:hover span,
+.hero__portfolio-link:focus-visible span {
+  transform: translateX(3px);
+}
+.hero__portfolio-link:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+.hero__portfolio-link.reveal { animation-delay: 0.16s; }
+
 .hero__meta {
   position: relative;
   z-index: 4;
