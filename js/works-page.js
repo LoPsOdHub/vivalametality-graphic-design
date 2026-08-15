@@ -1,154 +1,249 @@
 /* ==========================================================================
-   works.html — two jobs:
+   works.html router — one page, three views, switched by the URL:
 
-   1. Renders all six grids (main Works split into two grids — the first
-      6, then the rest joined by New Works, so together they read as one
-      continuous listing — followed by the 3D, Canvas, Banned, and
-      Sketches subsections, in that order) from js/works-data.js. Canvas
-      cards are the odd one out: they come from js/canvas-data.js and
-      link to canvas.html?piece=<id> (a turnable 3D viewer) instead of
-      this page's own ?w= detail view — see renderCanvasCard.
-   2. If the URL has ?w=<file>, finds that work (searching every list) and
-      reveals the detail view above the grids. With no ?w=, the page is
-      just the grids. With a ?w= that doesn't match anything (a typo'd or
-      stale link), a small inline note explains that instead of silently
-      showing nothing.
+     ?p=<projectId>    PROJECT DETAIL — title, category, description, and
+                        a full media gallery (images + video) for that one
+                        project. Reached by clicking a project card, a
+                        marquee item, or a 3D hotspot.
+     ?cat=<categoryId> CATEGORY GRID — the tab's list of project cards
+                        (cover image + title). Reached from the nav.
+     (neither)          OVERVIEW — all three categories, stacked, each
+                        with its own project grid. The page's default —
+                        also where "Back to Works" links land.
+
+   An unrecognized ?p= or ?cat= shows #notFound instead of silently
+   rendering nothing.
    ========================================================================== */
 
 import {
-  WORKS,
-  NEW_WORKS,
-  THREE_D,
-  SKETCHES,
-  BANNED,
-  findWorkByFile,
-  workUrl,
-  workImageSrc,
-} from "./works-data.js?v=7";
-import { CANVASES, canvasUrl, canvasImageSrc } from "./canvas-data.js?v=2";
+  CATEGORIES,
+  PROJECTS,
+  isVideo,
+  projectUrl,
+  categoryUrl,
+  mediaSrc,
+  coverSrc,
+  findProjectById,
+  findCategoryById,
+  projectsInCategory,
+} from "./works-data.js?v=12";
 
-/* ---- 1. Grids ---- */
-
-// The first 6 of the original Works, then the remaining Works continue
-// joined by the New Works — split into two grids but adjacent in the page
-// (see works.html), so they still read as one continuous Works listing.
-// Banned and Sketches follow after, in that order.
-const SPLIT_AT = 6;
-const worksPrimary = WORKS.slice(0, SPLIT_AT);
-const worksSecondary = [...WORKS.slice(SPLIT_AT), ...NEW_WORKS];
-
-function renderCard(work) {
+function renderProjectCard(project) {
   const article = document.createElement("article");
   article.className = "card";
 
   const a = document.createElement("a");
   a.className = "card__frame";
-  a.href = workUrl(work);
+  a.href = projectUrl(project);
 
   const img = document.createElement("img");
-  img.src = workImageSrc(work);
-  img.alt = work.title;
+  img.src = coverSrc(project);
+  img.alt = project.title;
   img.loading = "lazy";
 
   a.appendChild(img);
   article.appendChild(a);
+
+  const caption = document.createElement("span");
+  caption.className = "card__caption";
+  caption.textContent = project.title;
+  article.appendChild(caption);
+
   return article;
 }
 
-function renderGrid(containerId, works) {
-  const container = document.getElementById(containerId);
-  if (!container) return;
+function renderProjectGrid(container, projects) {
   const fragment = document.createDocumentFragment();
-  works.forEach((work) => fragment.appendChild(renderCard(work)));
+  projects.forEach((p) => fragment.appendChild(renderProjectCard(p)));
   container.appendChild(fragment);
 }
 
-// Same card markup as renderCard, but linking to canvas.html's 3D viewer
-// (canvasUrl) instead of this page's own ?w= detail view, and using the
-// canvas's mainImage as the thumbnail — the same photo that becomes the
-// 3D box's front face on its own page.
-function renderCanvasCard(piece) {
-  const article = document.createElement("article");
-  article.className = "card";
+/* A project's case-study page is a sequence of typed blocks (see the big
+   comment in works-data.js) rather than one flat grid — that's what lets
+   one image lead at full width, same-style shots sit together as a pair
+   or a 2x2, and short paragraphs break up long runs of images instead of
+   everything marching past at the same size. Each renderXBlock function
+   below handles one block type; renderGallery just dispatches on it. */
+
+// A single image, linking out to its full-size file (same pattern as this
+// site's earlier canvas-detail gallery), or a video with native controls
+// instead of a link, since there's nothing more "full size" to open.
+function renderTile(project, file) {
+  if (isVideo(file)) {
+    const video = document.createElement("video");
+    video.className = "gallery-tile__media";
+    video.src = mediaSrc(project, file);
+    video.controls = true;
+    video.playsInline = true;
+    video.preload = "metadata";
+    return video;
+  }
 
   const a = document.createElement("a");
-  a.className = "card__frame";
-  a.href = canvasUrl(piece);
+  a.className = "gallery-tile__media";
+  a.href = mediaSrc(project, file);
+  a.target = "_blank";
+  a.rel = "noopener";
+  a.setAttribute("aria-label", `${project.title} — open full size`);
 
   const img = document.createElement("img");
-  img.src = canvasImageSrc(piece.mainImage);
-  img.alt = piece.title;
+  img.src = mediaSrc(project, file);
+  img.alt = project.title;
   img.loading = "lazy";
-
   a.appendChild(img);
-  article.appendChild(a);
-  return article;
+  return a;
 }
 
-function renderCanvasGrid(containerId, pieces) {
-  const container = document.getElementById(containerId);
-  if (!container) return;
+// hero/video: one full-width tile, shown at its own natural aspect ratio
+// (not cropped) — the point of "leading" is that it isn't just another
+// same-shaped card in a row.
+function renderHeroBlock(project, file) {
+  const div = document.createElement("div");
+  div.className = "gallery-block gallery-block--hero";
+  div.appendChild(renderTile(project, file));
+  return div;
+}
+
+// pair/quad: 2 or 4 tiles that share a visual style closely enough to sit
+// together — cropped to a matching aspect ratio (unlike the hero) so the
+// group reads as one deliberate grid instead of a ragged row.
+function renderGroupBlock(project, files, modifier) {
+  const div = document.createElement("div");
+  div.className = `gallery-block gallery-block--${modifier}`;
+  files.forEach((file) => {
+    const tile = document.createElement("div");
+    tile.className = "gallery-tile";
+    tile.appendChild(renderTile(project, file));
+    div.appendChild(tile);
+  });
+  return div;
+}
+
+// A short paragraph, no image — narrates rather than just captioning, and
+// gives the eye a rest between image groups.
+function renderTextBlock(body) {
+  const p = document.createElement("p");
+  p.className = "gallery-block gallery-block--text";
+  p.textContent = body;
+  return p;
+}
+
+function renderGallery(container, project) {
   const fragment = document.createDocumentFragment();
-  pieces.forEach((piece) => fragment.appendChild(renderCanvasCard(piece)));
+  project.layout.forEach((block) => {
+    switch (block.type) {
+      case "hero":
+      case "video":
+        fragment.appendChild(renderHeroBlock(project, block.file));
+        break;
+      case "pair":
+        fragment.appendChild(renderGroupBlock(project, block.files, "pair"));
+        break;
+      case "quad":
+        fragment.appendChild(renderGroupBlock(project, block.files, "quad"));
+        break;
+      case "text":
+        fragment.appendChild(renderTextBlock(block.body));
+        break;
+    }
+  });
   container.appendChild(fragment);
 }
 
-renderGrid("worksGridPrimary", worksPrimary);
-renderGrid("worksGridSecondary", worksSecondary);
-renderGrid("threeDGrid", THREE_D);
-renderCanvasGrid("canvasGrid", CANVASES);
-renderGrid("bannedGrid", BANNED);
-renderGrid("sketchesGrid", SKETCHES);
+function renderOverview(container) {
+  CATEGORIES.forEach((cat) => {
+    const projects = projectsInCategory(cat.id);
+    if (projects.length === 0) return;
 
-/* ---- 2. Detail view ---- */
+    const section = document.createElement("section");
+    section.className = "section section--continued";
 
-// The one place on the site with a hover-zoom magnifier (see
-// .work-hero__image-wrap in css/style.css) — landing on a piece's own
-// page, via a click from the grid/marquee/3D hotspots, is what unlocks a
-// closer look; those browsing surfaces themselves stay static. Keeps
-// --zoom-x/--zoom-y matched to the cursor's position over the image so it
-// magnifies from wherever you're actually pointing.
-function trackZoomOrigin(frame, img) {
-  frame.addEventListener("mousemove", (e) => {
-    const rect = frame.getBoundingClientRect();
-    const x = ((e.clientX - rect.left) / rect.width) * 100;
-    const y = ((e.clientY - rect.top) / rect.height) * 100;
-    img.style.setProperty("--zoom-x", `${x}%`);
-    img.style.setProperty("--zoom-y", `${y}%`);
+    const head = document.createElement("div");
+    head.className = "section__head";
+    const heading = document.createElement("h2");
+    heading.className = "section__title";
+    const link = document.createElement("a");
+    link.href = categoryUrl(cat.id);
+    link.textContent = cat.label;
+    heading.appendChild(link);
+    head.appendChild(heading);
+    section.appendChild(head);
+
+    const grid = document.createElement("div");
+    grid.className = "grid";
+    renderProjectGrid(grid, projects);
+    section.appendChild(grid);
+
+    container.appendChild(section);
   });
 }
 
+/* ---- Router ---- */
+
 const params = new URLSearchParams(location.search);
-const file = params.get("w");
-const work = file ? findWorkByFile(file) : null;
+const projectId = params.get("p");
+const categoryId = params.get("cat");
 
-const detailEl = document.getElementById("workDetail");
+const projectDetailEl = document.getElementById("projectDetail");
+const categoryViewEl = document.getElementById("categoryView");
+const overviewViewEl = document.getElementById("overviewView");
+const notFoundEl = document.getElementById("notFound");
 
-if (work) {
-  const imageEl = document.getElementById("workImage");
-  const titleEl = document.getElementById("workTitle");
-  const mediumEl = document.getElementById("workMedium");
+// Underlines whichever nav tab matches the category actually showing —
+// same treatment the hover state gets (see .nav__links a.is-active in
+// css/style.css), just left on instead of needing the cursor over it.
+function markActiveTab(categoryId) {
+  if (!categoryId) return;
+  const href = categoryUrl(categoryId);
+  document.querySelectorAll(".nav__links a").forEach((a) => {
+    if (a.getAttribute("href") === href) a.classList.add("is-active");
+  });
+}
 
-  document.title = `Platon — ${work.title}`;
-  imageEl.src = workImageSrc(work);
-  imageEl.alt = work.title;
-  titleEl.textContent = work.title;
-  mediumEl.textContent = work.medium || "Fine Art";
-  trackZoomOrigin(imageEl.parentElement, imageEl);
-  detailEl.hidden = false;
-} else if (file) {
-  // A ?w= was given but didn't match anything — say so rather than
-  // leaving the visitor wondering why the page looks like plain Works.
-  const imageEl = document.getElementById("workImage");
-  const titleEl = document.getElementById("workTitle");
-  const mediumEl = document.getElementById("workMedium");
-  const descEl = document.getElementById("workDesc");
+// The not-found message says "see the full list below" — this renders
+// that list under it, same as the plain overview, so the promise holds.
+function showNotFound() {
+  document.title = "Platon — Not found";
+  notFoundEl.hidden = false;
+  renderOverview(overviewViewEl);
+  overviewViewEl.hidden = false;
+}
 
-  document.title = "Platon — Work not found";
-  imageEl.remove();
-  titleEl.textContent = "Work not found";
-  mediumEl.textContent = "";
-  descEl.textContent = "That link didn't match a piece here — it may be a typo or an old link. See the full list below.";
-  descEl.hidden = false;
-  detailEl.hidden = false;
+if (projectId) {
+  const project = findProjectById(projectId);
+  if (project) {
+    document.title = `Platon — ${project.title}`;
+    document.getElementById("projectMedium").textContent = project.medium;
+    document.getElementById("projectTitle").textContent = project.title;
+    document.getElementById("projectDesc").textContent = project.desc || "";
+    const siteEl = document.getElementById("projectSite");
+    if (project.site) {
+      siteEl.href = project.site.url;
+      siteEl.textContent = `Visit ${project.site.label} ↗`;
+      siteEl.hidden = false;
+    } else {
+      siteEl.hidden = true;
+    }
+    document.getElementById("projectBack").href = categoryUrl(project.category);
+    document.getElementById("projectBack").textContent = `Back to ${findCategoryById(project.category)?.label || "Works"}`;
+    renderGallery(document.getElementById("projectGallery"), project);
+    projectDetailEl.hidden = false;
+    markActiveTab(project.category);
+  } else {
+    showNotFound();
+  }
+} else if (categoryId) {
+  const category = findCategoryById(categoryId);
+  if (category) {
+    document.title = `Platon — ${category.label}`;
+    document.getElementById("categoryTitle").textContent = category.label;
+    renderProjectGrid(document.getElementById("categoryGrid"), projectsInCategory(category.id));
+    categoryViewEl.hidden = false;
+    markActiveTab(category.id);
+  } else {
+    showNotFound();
+  }
+} else {
+  renderOverview(overviewViewEl);
+  overviewViewEl.hidden = false;
 }

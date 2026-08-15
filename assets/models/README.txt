@@ -1,12 +1,13 @@
-Model in use: "MODEL CLAUDE 4 !!! .glb" (loaded by js/main.js via GLTFLoader).
+Model in use: "TEST RUN 1903.glb" (loaded by js/main.js via GLTFLoader).
 
-This one is a scene of 9 distinct objects — trash bins, a container, two
-piles of junk/debris, a large 3D text piece, and the earlier apartment
-building tucked in as a background element — rather than one continuous
-surface. Each of the 9 objects becomes its own clickable hotspot (see the
-notes at the bottom of js/main.js); with only 10 works and 9 objects, the
-work assigned to each is close to 1:1, still just assignment order rather
-than a deliberate pairing.
-
-Earlier models ("CODE SCENE .obj", "claude SCENE .glb", "MODEL claude 2
-.glb") are no longer loaded by the page but are still in this folder.
+A single sneaker, exported as ~18 separately named parts (sole, tongue,
+laces, eyelets, logo badges, seams, sock liner, etc.) rather than one
+continuous mesh. Not all of them become hotspots: js/main.js's
+filterHotspotsBySize() keeps only parts at least 40% the size of the
+single largest one (CONFIG.hotspotMinSizeRatio), which drops the small
+trim (eyelets, seams, small logo badges) and leaves roughly the half-dozen
+major panels clickable — a shoe-sized model reads as cluttered with every
+part wired up at once, however precisely each one individually tracks.
+With 7 projects and about that many surviving hotspots, the project
+assigned to each is close to 1:1, still just assignment order rather than
+a deliberate pairing.

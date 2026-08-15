@@ -28,18 +28,6 @@
   font-display: swap;
 }
 
-/* A rough, hand-stencilled display face — used only by the "Stencil It"
-   tool on the War canvas page (canvas.html, see .stencil-tool below).
-   Uppercase letters only; no digits or punctuation, so every rule using
-   it lists a normal fallback right after it, letting the browser drop
-   into --font-display glyph-by-glyph for whatever this doesn't cover. */
-@font-face {
-  font-family: "Warfont";
-  src: url("../assets/fonts/Warfont-Regular.ttf") format("truetype");
-  font-weight: 400;
-  font-display: swap;
-}
-
 :root {
   /* ---- Color: aged-paper beige, near-black ink, and a muted stamp-red
      pulled straight from the accent marks in the artwork itself (the red
@@ -313,7 +301,9 @@ button { font: inherit; color: inherit; }
 .nav__mark { color: var(--ink); }
 .nav__links {
   display: flex;
-  gap: clamp(16px, 3vw, 36px);
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: clamp(12px, 2.4vw, 32px) clamp(16px, 3vw, 36px);
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -340,6 +330,9 @@ button { font: inherit; color: inherit; }
   outline: 2px solid var(--accent);
   outline-offset: 4px;
 }
+/* Marks the current category tab on works.html (set by js/works-page.js) —
+   same underline the hover state uses, just permanently drawn in. */
+.nav__links a.is-active::after { right: 0; background: var(--ink); }
 /* Used on pages without a full-bleed hero behind it (works.html,
    contact.html, about.html), so the nav sits in normal flow instead of
    overlaying absolute at the top. */
@@ -497,39 +490,13 @@ button { font: inherit; color: inherit; }
   letter-spacing: -0.01em;
 }
 
-/* A subsection nested within the Works page (Sketches, Banned) — smaller
-   than a full .section__title so it reads as "part of Works", not a new
-   page section, and sits closer to what came before it. */
-.section--sub { padding-top: clamp(24px, 5vh, 56px); }
-
 /* The second half of the Works grid (see works.html) — no header of its
    own, so it should read as more rows of the same grid above it, not a
    new section. Top padding matches .grid's own row gap exactly (rather
    than 0), so the seam between the two grids falls at the same spacing
-   as every other row break inside a single grid — 0 would pull that one
-   seam noticeably tighter than the rest. Only the section directly
-   before it needs trimming to match: whichever series section follows
-   this one (Banned) still opens with .section--sub's normal top padding,
-   so the gap re-appears there, where a new named series legitimately
-   starts. */
+   as every other row break inside a single grid. */
 .section--continued { padding-top: clamp(18px, 2.6vw, 28px); }
 .works:has(+ .section--continued) { padding-bottom: 0; }
-.subsection__kicker {
-  display: block;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin-bottom: 6px;
-}
-.subsection__title {
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: clamp(22px, 2.8vw, 32px);
-  text-transform: uppercase;
-  letter-spacing: -0.01em;
-}
 
 /* ---- About ---- */
 .about__copy p {
@@ -578,6 +545,101 @@ button { font: inherit; color: inherit; }
 .card__frame:hover img,
 .card__frame:focus-visible img { filter: grayscale(0) contrast(1.05); }
 .card__frame:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+/* A project card's title, under its cover thumbnail — unlike the plain
+   Works grid (image only), a category grid mixes several different
+   projects, so naming each one before you click matters here. */
+.card__caption {
+  display: block;
+  margin-top: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+/* ==========================================================================
+   PROJECT GALLERY (works.html's #projectGallery, filled in by
+   js/works-page.js's renderGallery) — a project's case-study page is a
+   sequence of typed blocks, not one flat grid: a hero image leads at full
+   width and its own natural aspect ratio, same-style shots sit together
+   as a pair or a 2x2 (cropped to match, so the group reads as one grid),
+   and short text blocks break up long runs of images. See the big
+   comment at the top of js/works-data.js for the block shapes.
+   ========================================================================== */
+.project-gallery { margin-top: clamp(40px, 7vh, 72px); }
+
+.gallery-block { margin-top: clamp(28px, 4.5vw, 48px); }
+.gallery-block:first-child { margin-top: 0; }
+
+/* hero/video — full width, own aspect ratio, never cropped. A phone
+   mockup and a wide browser screenshot are wildly different shapes; the
+   point of a leading image is to be seen at the shape it actually is. */
+.gallery-block--hero {
+  max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.gallery-block--hero .gallery-tile__media,
+.gallery-block--hero .gallery-tile__media img,
+.gallery-block--hero .gallery-tile__media video {
+  display: block;
+  width: 100%;
+  height: auto;
+  background: var(--paper-dim);
+}
+
+/* pair/quad — 2 or 4 tiles, cropped to a shared aspect ratio so the group
+   sits together as one deliberate grid instead of a ragged row. */
+.gallery-block--pair,
+.gallery-block--quad {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(12px, 2vw, 20px);
+}
+@media (max-width: 640px) {
+  .gallery-block--pair,
+  .gallery-block--quad {
+    grid-template-columns: 1fr;
+  }
+}
+.gallery-tile {
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  background: var(--paper-dim);
+}
+.gallery-tile__media {
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+}
+.gallery-tile__media img,
+.gallery-tile__media video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+/* Videos get native controls and aren't a click-through link — no
+   pointer cursor, and contain rather than cover so controls/letterboxing
+   never crop into the frame. */
+video.gallery-tile__media {
+  cursor: default;
+  object-fit: contain;
+  background: var(--ink);
+}
+
+/* text — a short paragraph, no image, centered as a column of ordinary
+   left-aligned body copy (same treatment as .work-hero__desc above). */
+.gallery-block--text {
+  max-width: 56ch;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: left;
+  font-size: clamp(16px, 1.6vw, 18px);
+  line-height: 1.65;
+  color: var(--ink);
+}
 
 /* ---- Contact ---- */
 .contact__grid {
@@ -707,30 +769,6 @@ a.contact__row:focus-visible { outline: 2px solid var(--accent); outline-offset:
   transition: color 0.2s ease;
 }
 .work-back:hover { color: var(--accent); }
-.work-hero__image-wrap {
-  display: flex;
-  justify-content: center;
-  margin-bottom: clamp(24px, 5vh, 48px);
-  background: var(--paper-dim);
-  /* Clips the magnifier below — scaling .work-hero__image up on hover
-     would otherwise just spill past this box instead of cropping into it. */
-  overflow: hidden;
-  cursor: zoom-in;
-}
-.work-hero__image {
-  display: block;
-  max-width: 100%;
-  max-height: 74vh;
-  object-fit: contain;
-  /* The only place on the site with a hover-zoom magnifier — see
-     js/works-page.js's trackZoomOrigin, which keeps --zoom-x/--zoom-y
-     matched to the cursor so it magnifies from wherever you're actually
-     pointing. The Works grid and marquee stay plain/static on purpose;
-     landing on a piece's own page is what unlocks a closer look. */
-  transform-origin: var(--zoom-x, 50%) var(--zoom-y, 50%);
-  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-}
-.work-hero__image-wrap:hover .work-hero__image { transform: scale(1.8); }
 .work-hero__meta { text-align: center; }
 .work-hero__medium {
   display: block;
@@ -748,151 +786,34 @@ a.contact__row:focus-visible { outline: 2px solid var(--accent); outline-offset:
   text-transform: uppercase;
 }
 .work-hero__desc {
-  margin-top: 14px;
-  font-size: 14px;
-  font-style: italic;
+  /* .work-hero__meta centers everything above this via text-align, which
+     only centers INLINE content — this is a block with its own max-width,
+     so without margin:auto it sat flush against the container's left
+     edge on anything wider than 56ch instead of in the middle, with its
+     own (centered) text floating oddly inside that off-center box. A
+     centered column of ordinary left-aligned body copy reads as a
+     paragraph and sits in the middle at the same time. */
+  margin: 14px auto 0;
+  max-width: 56ch;
+  text-align: left;
+  font-size: 16px;
+  line-height: 1.6;
   color: var(--muted);
 }
 
-/* ==========================================================================
-   CANVAS VIEWER (canvas.html?piece=<id>, filled in by js/canvas-viewer.js
-   from js/canvas-data.js) — a physical canvas painting shown as a
-   turnable, zoomable 3D box (front face = the piece's photo) instead of a
-   flat image, plus a gallery of close-up photos underneath. Reuses
-   .work-hero__medium/__title from the block above so the heading reads
-   identically to a normal work's detail page.
-   ========================================================================== */
-.canvas-hero {
-  max-width: var(--container);
-  margin: 0 auto;
-  padding: clamp(110px, 16vh, 180px) var(--gutter) clamp(64px, 10vh, 120px);
-}
-.canvas-hero__meta {
-  text-align: center;
-  margin-bottom: clamp(24px, 5vh, 48px);
-}
-
-/* Square, like .hero__stage on the home page — the 3D viewer frames the
-   canvas box around its own diagonal (see canvas-viewer.js's
-   frameCameraToFit), so the stage's own aspect ratio doesn't need to
-   match the artwork's; square just keeps this page visually consistent
-   with the home hero. No background and no overflow clipping, on
-   purpose: the renderer itself clears to fully transparent, so the
-   piece floats directly on the page's own background instead of
-   sitting in a separate boxed-off square, and nothing here can clip a
-   corner as it turns. */
-.canvas-stage {
-  position: relative;
-  width: min(70vw, 66vh);
-  max-width: 560px;
-  aspect-ratio: 1 / 1;
-  margin: 0 auto;
-}
-#canvasScene {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
+/* A project's own live site (works.html's #projectSite, only shown when
+   js/works-data.js's project has a `site`) — same small-caps label
+   treatment as .work-back, no underline, just a color shift on hover. */
+.work-hero__site {
   display: block;
-  cursor: grab;
-  touch-action: none; /* dragging orbits the piece, not the page */
-}
-#canvasScene.is-dragging { cursor: grabbing; }
-.canvas-stage__loading {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  margin: 18px auto 0;
+  width: fit-content;
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--muted);
-  background: var(--paper-dim);
-}
-.canvas-stage__loading[hidden] { display: none; }
-.canvas-stage__hint {
-  text-align: center;
-  margin-top: 14px;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--muted);
-  opacity: 0.8;
-}
-
-.canvas-gallery { margin-top: clamp(64px, 10vh, 120px); }
-.canvas-gallery .section__head { margin-bottom: clamp(24px, 5vh, 40px); }
-
-/* ==========================================================================
-   STENCIL TOOL — canvas.html's "Stencil It" widget (currently War-only,
-   see js/canvas-data.js's stencilFont + js/canvas-viewer.js's
-   renderStencilTool). Type into the input, the button stamps whatever's
-   typed in the Warfont face, with a little press + off-kilter rotation
-   each time — a hand-stamp, not a perfectly centered logo.
-   ========================================================================== */
-.stencil-tool {
-  margin-top: clamp(64px, 10vh, 120px);
-  text-align: center;
-}
-.stencil-tool .section__head { margin-bottom: clamp(24px, 5vh, 40px); }
-.stencil-tool__label {
-  display: block;
-  margin-bottom: 10px;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--muted);
-}
-.stencil-tool__input {
-  display: block;
-  width: min(100%, 360px);
-  margin: 0 auto 28px;
-  padding: 10px 4px;
-  border: none;
-  border-bottom: 1.5px solid var(--line);
-  background: transparent;
-  color: var(--ink);
-  font: inherit;
-  font-size: 16px;
-  text-align: center;
-  letter-spacing: 0.02em;
-  transition: border-color 0.2s ease;
-}
-.stencil-tool__input::placeholder { color: var(--muted); }
-.stencil-tool__input:focus-visible {
-  outline: none;
-  border-color: var(--accent);
-}
-
-/* The stamp itself — a plaque you press, like the boxed rubber-stamp
-   labels recurring in the artwork ("This product contains…"). */
-.stencil-tool__stamp {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: min(100%, 480px);
-  padding: clamp(28px, 5vw, 48px) clamp(24px, 4vw, 40px);
-  border: 2px solid var(--ink);
-  background: transparent;
-  cursor: pointer;
-  transition: transform 0.08s ease, border-color 0.2s ease;
-}
-.stencil-tool__stamp:hover { border-color: var(--accent); }
-.stencil-tool__stamp:active { transform: scale(0.94); }
-.stencil-tool__stamp:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
-.stencil-tool__preview {
-  display: inline-block;
-  font-family: "Warfont", var(--font-display);
-  font-size: clamp(32px, 7vw, 72px);
-  line-height: 1;
   color: var(--accent);
-  text-transform: uppercase;
-  word-break: break-word;
-  /* Reset on every stamp (see js/canvas-viewer.js) to a fresh small
-     random angle — a real stamp never lands perfectly level twice. */
-  transition: transform 0.12s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: color 0.2s ease;
 }
+.work-hero__site:hover { color: var(--ink); }
+

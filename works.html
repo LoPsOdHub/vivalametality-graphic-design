@@ -4,9 +4,9 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Platon — Works</title>
-<meta name="description" content="Platon's fine art works — ink and pen pieces, one per page." />
+<meta name="description" content="Platon's selected work — UX/UI, branding, and design projects." />
 <link rel="icon" type="image/svg+xml" href="favicon.svg" />
-<link rel="stylesheet" href="css/style.css?v=18" />
+<link rel="stylesheet" href="css/style.css?v=23" />
 </head>
 <body>
 
@@ -16,7 +16,9 @@
   </a>
   <ul class="nav__links">
     <li><a href="index.html">Home</a></li>
-    <li><a href="works.html">Works</a></li>
+    <li><a href="works.html?cat=ux-ui">UX/UI</a></li>
+    <li><a href="works.html?cat=branding">Branding</a></li>
+    <li><a href="works.html?cat=designs">Designs</a></li>
     <li><a href="contact.html">Contact</a></li>
     <li><a href="about.html">About</a></li>
   </ul>
@@ -24,87 +26,49 @@
 
 <main>
   <!--
-    DETAIL VIEW — hidden by default, filled in and revealed by
-    js/works-page.js only when the URL has a ?w=<file> pointing at a real
-    work (arrived at from the 3D model's hotspots or the grid below).
+    All four views below are hidden by default and switched on by
+    js/works-page.js based on the URL:
+      ?p=<projectId>    → PROJECT DETAIL  (one project's own case-study page)
+      ?cat=<categoryId> → CATEGORY GRID   (that tab's list of projects)
+      neither           → OVERVIEW       (all three categories, stacked)
+      ?p= that doesn't match anything → NOT FOUND
   -->
-  <section class="work-hero" id="workDetail" hidden>
-    <a class="work-back" href="index.html">Back to Home</a>
 
-    <div class="work-hero__image-wrap">
-      <img class="work-hero__image" id="workImage" alt="" />
-    </div>
+  <section class="work-hero" id="projectDetail" hidden>
+    <a class="work-back" id="projectBack" href="works.html">Back</a>
 
     <div class="work-hero__meta">
-      <span class="work-hero__medium" id="workMedium"></span>
-      <h1 class="work-hero__title" id="workTitle"></h1>
-      <!-- No descriptions yet — see README.md point 2. Hidden by default
-           (on request — a "Description forthcoming." placeholder read as
-           an unfinished page rather than a deliberate choice); js/works-
-           page.js only un-hides this for the one case it still needs it:
-           a ?w= that didn't match anything. -->
-      <p class="work-hero__desc" id="workDesc" hidden></p>
+      <span class="work-hero__medium" id="projectMedium"></span>
+      <h1 class="work-hero__title" id="projectTitle"></h1>
+      <p class="work-hero__desc" id="projectDesc"></p>
+      <a class="work-hero__site" id="projectSite" target="_blank" rel="noopener" hidden></a>
     </div>
+
+    <div class="project-gallery" id="projectGallery"></div>
   </section>
 
-  <!--
-    All six grids below are filled in by js/works-page.js from
-    js/works-data.js (Canvas cards come from js/canvas-data.js instead —
-    see js/works-page.js's renderCanvasCard) — WORKS is split into two
-    grids (the first 6, then the rest) with NEW_WORKS joining the second
-    half, so together they still read as one continuous Works listing.
-    3D, Canvas, Banned, and Sketches are their own subsections after it
-    (not part of the marquee, not on the 3D hero model). Clicking a normal
-    piece reloads this same page with ?w=<file>, which shows that piece's
-    detail view above these grids; clicking a Canvas piece instead opens
-    its own page (canvas.html?piece=<id>) with a turnable 3D viewer.
-  -->
-  <section class="section works" id="works">
+  <section class="section works" id="categoryView" hidden>
     <div class="section__head">
-      <h2 class="section__title">Works</h2>
+      <h2 class="section__title" id="categoryTitle"></h2>
     </div>
-    <div class="grid" id="worksGridPrimary"></div>
+    <div class="grid" id="categoryGrid"></div>
   </section>
 
-  <!-- No header, no top/bottom breathing room of its own (see
-       .section--continued) — this is the second half of the same Works
-       listing above, not a separate subsection like 3D/Canvas/Banned/
-       Sketches. -->
-  <section class="section section--continued">
-    <div class="grid" id="worksGridSecondary"></div>
+  <!-- Shown together with #overviewView right after it when a ?p=/?cat=
+       didn't match anything — "see the full list below" only holds up
+       because this sits above that list in source order. -->
+  <section class="work-hero" id="notFound" hidden>
+    <a class="work-back" href="works.html">Back to Works</a>
+    <div class="work-hero__meta">
+      <h1 class="work-hero__title">Not found</h1>
+      <p class="work-hero__desc">That link didn't match anything here — it may be a typo or an old link. See the full list below.</p>
+    </div>
   </section>
 
-  <section class="section section--sub" id="three-d">
-    <div class="section__head">
-      <span class="subsection__kicker">A Series</span>
-      <h3 class="subsection__title">3D</h3>
-    </div>
-    <div class="grid" id="threeDGrid"></div>
-  </section>
-
-  <section class="section section--sub" id="canvas">
-    <div class="section__head">
-      <span class="subsection__kicker">A Series</span>
-      <h3 class="subsection__title">Canvas</h3>
-    </div>
-    <div class="grid" id="canvasGrid"></div>
-  </section>
-
-  <section class="section section--sub" id="banned">
-    <div class="section__head">
-      <span class="subsection__kicker">A Series</span>
-      <h3 class="subsection__title">Banned</h3>
-    </div>
-    <div class="grid" id="bannedGrid"></div>
-  </section>
-
-  <section class="section section--sub" id="sketches">
-    <div class="section__head">
-      <span class="subsection__kicker">A Series</span>
-      <h3 class="subsection__title">Sketches</h3>
-    </div>
-    <div class="grid" id="sketchesGrid"></div>
-  </section>
+  <!-- Filled in with one .section per category (see js/works-page.js's
+       renderOverview) — kept as JS-built sections rather than three
+       near-identical blocks here, same pattern as the grids above. -->
+  <div id="overviewView" hidden></div>
 </main>
 
 <footer class="footer">
@@ -112,6 +76,6 @@
   <a href="index.html">Back to home</a>
 </footer>
 
-<script type="module" src="js/works-page.js?v=9"></script>
+<script type="module" src="js/works-page.js?v=14"></script>
 </body>
 </html>
