@@ -26,7 +26,8 @@ import {
   findProjectById,
   findCategoryById,
   projectsInCategory,
-} from "./works-data.js?v=12";
+} from "./works-data.js?v=13";
+import { renderBrief } from "./brief.js?v=2";
 
 function renderProjectCard(project) {
   const article = document.createElement("article");
@@ -226,7 +227,8 @@ if (projectId) {
     }
     document.getElementById("projectBack").href = categoryUrl(project.category);
     document.getElementById("projectBack").textContent = `Back to ${findCategoryById(project.category)?.label || "Works"}`;
-    renderGallery(document.getElementById("projectGallery"), project);
+    if (project.brief) renderBrief(document.getElementById("projectGallery"), project);
+    else renderGallery(document.getElementById("projectGallery"), project);
     projectDetailEl.hidden = false;
     markActiveTab(project.category);
   } else {
