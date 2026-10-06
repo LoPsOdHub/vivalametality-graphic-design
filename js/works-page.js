@@ -220,7 +220,7 @@ if (projectId) {
     const siteEl = document.getElementById("projectSite");
     if (project.site) {
       siteEl.href = project.site.url;
-      siteEl.textContent = `Visit ${project.site.label} ↗`;
+      siteEl.textContent = `Visit ${project.site.label}`;
       siteEl.hidden = false;
     } else {
       siteEl.hidden = true;
