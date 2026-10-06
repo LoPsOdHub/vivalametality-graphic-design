@@ -369,7 +369,9 @@ button { font: inherit; color: inherit; }
   font-size: clamp(18px, 2vw, 26px);
   line-height: 1.15;
   letter-spacing: -0.005em;
-  text-wrap: balance;
+  /* one line always — "DESIGN PORTFOLIO" must not break inside the narrow
+     .hero__text column */
+  white-space: nowrap;
 }
 
 /* Cross-link to the fine-art portfolio (a separate site) — echoes .stamp's
