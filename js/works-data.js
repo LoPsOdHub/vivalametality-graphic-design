@@ -27,7 +27,8 @@
 
    `brief` is optional and replaces `layout` for projects told as a
    structured process (MIRO Drink) — a tagline, a few facts, a list of
-   chapters (text + typed media) and an optional PDF. See js/brief.js for
+   chapters (text + typed media), an optional PDF, and an optional `film`
+   (a looping video pinned beside the page — Foreign Exchange). See js/brief.js for
    the chapter/media shapes it understands.
 
    `site` is optional — { url, label } for a project with a live site of
@@ -61,6 +62,66 @@ export const PROJECTS = [
       { type: "pair", files: ["ChatGPT Image Jun 13, 2026, 07_18_14 PM.png", "dbeda208-b227-4f9d-a591-687669f33d98.png"] },
       { type: "hero", file: "Vertical-Rigid-Plastic-Rounded-Identity-Gravity-Cards-Free-psd-Mockup.jpg" },
     ],
+  },
+  {
+    id: "foreign-exchange",
+    category: "branding",
+    dir: "Branding/Foreign Exchange",
+    title: "Foreign Exchange",
+    medium: "Branding",
+    desc: "A small social campaign for a café at 22 Leinster Terrace, made with young artists. The aim is to make Foreign Exchange the place in London where creative people come to sit, work and feel free to make things.",
+    cover: "cover.webp",
+    brief: {
+      tagline: "Rates daily. Roasts weekly.",
+      film: {
+        file: "fx-final.mp4",
+        poster: "fx-final-poster.webp",
+        title: "Final film",
+        caption: "The café builds itself brick by brick, fills up, and ends on the cup. 26 seconds, vertical.",
+      },
+      facts: [
+        ["Place", "22 Leinster Terrace, London W2"],
+        ["Type", "Social campaign"],
+        ["Scope", "3D animation, posters, postcards"],
+        ["Year", "2026"],
+      ],
+      chapters: [
+        {
+          id: "idea",
+          title: "A café that trades in ideas",
+          text: [
+            "Foreign Exchange borrows its name and its rate board from the bureau de change, then swaps the currency. What changes hands here is work in progress: sketches, drafts and half-finished ideas, passed across a table with a coffee.",
+            "The campaign works with young artists, who each bring their own take on the café, and shares that work across its social channels. The more people draw it, film it and photograph it, the more it reads as a place that belongs to them.",
+            "The promise underneath is plain: a café where artists feel free to create. Nobody asks you to move on, and nobody minds a sketchbook taking up the table.",
+          ],
+          media: { type: "figure", file: "poster-building.webp", title: "Campaign poster", caption: "The whole building as a miniature, under the campaign line." },
+        },
+        {
+          id: "film",
+          title: "From prototype to final film",
+          text: [
+            "The first pass was a rough block-out: a low-poly street, a camera move down to the terrace and people arriving. It was only there to test the timing and the story.",
+            "The final film keeps the idea and rebuilds everything else. The café assembles itself as a model, the palette settles into cream, terracotta and bottle green, and the last shot hands you the cup.",
+          ],
+          media: {
+            type: "videos",
+            wide: true,
+            items: [
+              { file: "fx-prototype.mp4", poster: "fx-prototype-poster.webp", title: "Prototype", caption: "Block-out pass. Square format, 40 seconds.", ratio: "1 / 1", loop: true },
+            ],
+          },
+        },
+        {
+          id: "print",
+          title: "Posters and postcards",
+          text: "The stills take the same miniature into print. One poster shows the whole building, the other pulls in close and sits you at a table on the terrace. The postcards carry that close-up on the front and leave the back clear for a note or a sketch.",
+          media: { type: "figure", file: "poster-terrace.webp", title: "Terrace poster", caption: "A closer crop: the rate board, the awning and the people outside." },
+          more: [
+            { type: "figure", file: "postcards.webp", title: "Postcards", caption: "Front and back. The name, the number and room to write.", wide: true },
+          ],
+        },
+      ],
+    },
   },
   {
     id: "miro-drink",

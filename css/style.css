@@ -1110,6 +1110,36 @@ a.contact__row:focus-visible { outline: 2px solid var(--accent); outline-offset:
   .bgrid--videos { grid-template-columns: minmax(0, 360px); }
 }
 
+.bgrid--video-wide { grid-template-columns: minmax(0, 620px); }
+
+/* ---- Pinned film (briefs with `film` — Foreign Exchange): the film sits
+   in its own column and sticks while the chapters scroll past it. Its
+   width is derived from the viewport height so the whole 9:16 frame and
+   its caption always fit on screen. ---- */
+.brief--film {
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: clamp(32px, 5vw, 80px);
+  align-items: start;
+}
+.brief__main {
+  display: grid;
+  gap: clamp(64px, 10vw, 120px);
+  min-width: 0;
+}
+.bintro--plain { grid-template-columns: 1fr; }
+.bfilm {
+  position: sticky;
+  top: 24px;
+  width: min(360px, calc((100svh - 150px) * 0.563));
+  min-width: 220px;
+}
+.bfilm__video { aspect-ratio: 608 / 1080; background: var(--paper-dim); }
+.bchapter__text + .bchapter__text { margin-top: 14px; }
+@media (max-width: 900px) {
+  .brief--film { grid-template-columns: 1fr; }
+  .bfilm { position: static; width: min(100%, 340px); margin-inline: auto; }
+}
+
 /* ---- PDF viewer ---- */
 .bbook__actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 24px; }
 .bbook__btn {
