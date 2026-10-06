@@ -26,8 +26,8 @@ import {
   findProjectById,
   findCategoryById,
   projectsInCategory,
-} from "./works-data.js?v=14";
-import { renderBrief } from "./brief.js?v=3";
+} from "./works-data.js?v=15";
+import { renderBrief } from "./brief.js?v=4";
 
 function renderProjectCard(project) {
   const article = document.createElement("article");

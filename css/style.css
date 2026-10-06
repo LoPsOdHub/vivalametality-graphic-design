@@ -1015,6 +1015,8 @@ a.contact__row:focus-visible { outline: 2px solid var(--accent); outline-offset:
   grid-template-columns: var(--tracks, repeat(var(--cols), minmax(0, 1fr)));
   align-items: start;
 }
+.bgrid--crop .bfig__link { aspect-ratio: var(--ratio); }
+.bgrid--crop .bfig__link img { height: 100%; object-fit: cover; }
 @media (max-width: 820px) {
   .bgrid--tiles,
   .bgrid--figures { grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); }

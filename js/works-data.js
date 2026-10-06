@@ -211,7 +211,15 @@ export const PROJECTS = [
           text: "The front sets the face on ivory, then a torn horizon drops into a turquoise sky, a yellow flavour plaque and a row of stepped temples. It is built for two formats, a 250 mL slim and a 355 mL standard.",
           media: { type: "figure", file: "hero-can.webp", title: "Ginger Lemon, slim can", caption: "Front artwork on the 250 mL format.", wide: true },
           more: [
-            { type: "figure", file: "mockup-two-cans.webp", title: "Front and back", caption: "355 mL cans, with the nutrition and benefits panel on the back." },
+            {
+              type: "figures",
+              cols: 2,
+              wide: [0.7, 1.3],
+              items: [
+                { file: "can-cutout.webp", title: "Ginger Lemon, cut out", caption: "The slim can on a transparent background." },
+                { file: "mockup-two-cans.webp", title: "Front and back", caption: "355 mL cans, with the nutrition and benefits panel on the back." },
+              ],
+            },
             { type: "figure", file: "packaging-flats.webp", title: "Flat artwork", caption: "Front and back panels for both can formats.", wide: true },
             {
               type: "figures",
@@ -263,7 +271,7 @@ export const PROJECTS = [
               cols: 3,
               items: [
                 { file: "social-profile.webp", title: "Instagram profile", caption: "Avatar, bio, highlights and a mixed grid." },
-                { file: "social-post.webp", title: "Feed post", caption: "Campaign art with a short, playful caption." },
+                { file: "social-post.webp", title: "Feed post", caption: "Rooted in good taste, at 1080 × 1350 for the feed." },
                 { file: "stationery.webp", title: "Business cards", caption: "95 × 55 mm. The face on the front, an ivory wordmark on deep teal on the back." },
               ],
             },
@@ -293,33 +301,117 @@ export const PROJECTS = [
     desc: "A custom Air Jordan 1 line and full brand system. The idea was simple and a little uncomfortable: take Nike's own visual language and run it through Soviet propaganda. Wordmark, packaging, site, social, all in the same red and yellow, hammer-and-sneaker identity.",
     site: { url: "https://everlost.online", label: "everlost.online" },
     cover: "Everlost — Custom Nike Project.jpg",
-    layout: [
-      { type: "hero", file: "Everlost — Custom Nike Project.jpg" },
-      { type: "text", body: "Communike started as a bit of a dare. What if a sneaker brand looked like it came out of a Soviet print shop instead of a streetwear studio. The identity has to hold both of those at once." },
-      { type: "hero", file: "website browser mockup.jpg" },
-      { type: "pair", files: ["website browser mockup 1.jpg", "website browser mockup 2.jpg"] },
-      { type: "quad", files: ["COMMUNIKE CARD.jpg", "COMMUNIKE DESIGN.jpg", "COMMUNIKE POST.jpg", "POST COMMUNIKE.jpg"] },
-      { type: "text", body: "Wordmark, packaging, social. Same mark, same red and yellow, every time, until it stops looking like decoration and starts looking like it was always there." },
-      { type: "pair", files: ["LOGO WHITE DESIGN.jpg", "POSTER EVERLOST 1.jpg"] },
-      { type: "quad", files: ["EVERLOST POST 1.jpg", "POST 4.jpg", "DESETER SALE FINAL.jpg", "Instagram Post Story Mockup.jpg"] },
-      { type: "pair", files: ["IMAGE 1.jpg", "IMAGE 3.jpg"] },
-      { type: "text", body: "Some of the early exploration used AI-generated renders before the real photography happened, mostly to test the palette and the iconography directly on the shoe." },
-      { type: "quad", files: [
-        "ChatGPT Image May 21, 2026, 12_17_48 AM.png",
-        "ChatGPT Image May 21, 2026, 12_21_28 AM.png",
-        "ChatGPT Image May 21, 2026, 12_21_32 AM.png",
-        "ChatGPT Image May 21, 2026, 12_22_45 AM.png",
-      ] },
-      { type: "quad", files: [
-        "ChatGPT Image May 21, 2026, 12_24_49 AM.png",
-        "ChatGPT Image May 21, 2026, 12_27_51 AM.png",
-        "ChatGPT Image May 21, 2026, 12_28_41 AM.png",
-        "2.jpg",
-      ] },
-      { type: "hero", file: "DGHJ.jpg" },
-      { type: "text", body: "A separate collaboration handled the ad shoot for the shoe, filming it the way you'd film a real Nike release rather than a personal project." },
-      { type: "video", file: "final export 4k.mp4" },
-    ],
+    brief: {
+      tagline: "We believe art can be worn like shoes.",
+      facts: [
+        ["Brand", "Everlost"],
+        ["Product", "Custom Air Jordan 1"],
+        ["Pairs", "Deserter (001), Communike (002)"],
+        ["Scope", "Identity, packaging, site, social, film"],
+      ],
+      chapters: [
+        {
+          id: "dare",
+          title: "It started as a dare",
+          text: "Communike began with a question. What if a sneaker brand looked like it came out of a Soviet print shop instead of a streetwear studio. The identity has to hold both of those at once.",
+          media: {
+            type: "figures",
+            cols: 2,
+            items: [
+              { file: "LOGO WHITE DESIGN.jpg", title: "The mark", caption: "A striped E inside a ring, in one flat blue." },
+              { file: "POSTER EVERLOST 1.jpg", title: "Communike poster", caption: "The statement, the pair and where to find it." },
+            ],
+          },
+        },
+        {
+          id: "testing",
+          title: "Testing it on the shoe",
+          text: "Some of the early exploration used AI-generated renders before the real photography happened, mostly to test the palette and the iconography directly on the shoe.",
+          media: {
+            type: "tiles",
+            cols: 3,
+            crop: "1 / 1",
+            items: [
+              { file: "ChatGPT Image May 21, 2026, 12_17_48 AM.png", title: "Side" },
+              { file: "ChatGPT Image May 21, 2026, 12_21_28 AM.png", title: "Front" },
+              { file: "ChatGPT Image May 21, 2026, 12_21_32 AM.png", title: "Top" },
+              { file: "ChatGPT Image May 21, 2026, 12_22_45 AM.png", title: "Heel" },
+              { file: "ChatGPT Image May 21, 2026, 12_24_49 AM.png", title: "Stitched swoosh" },
+              { file: "ChatGPT Image May 21, 2026, 12_27_51 AM.png", title: "Maker's plate" },
+            ],
+          },
+          more: [
+            {
+              type: "figures",
+              cols: 2,
+              items: [
+                { file: "DGHJ.jpg", title: "Blueprint", caption: "The shoe drawn as parts that come apart and swap." },
+                { file: "2.jpg", title: "Rebuild it your own way", caption: "The same idea as a poster." },
+              ],
+            },
+          ],
+        },
+        {
+          id: "pairs",
+          title: "Two artifacts",
+          text: "Two pairs so far. Deserter, artifact 001, is printed camouflage with a swoosh cut from hatching. Communike, artifact 002, puts a hammer-and-sickle swoosh on red and yellow leather.",
+          media: {
+            type: "tiles",
+            cols: 2,
+            crop: "1 / 1",
+            items: [
+              { file: "EVERLOST POST 1.jpg", title: "Deserter", caption: "Artifact 001." },
+              { file: "COMMUNIKE CARD.jpg", title: "Communike", caption: "Artifact 002." },
+              { file: "IMAGE 1.jpg", title: "Deserter, close", caption: "Printed camouflage and laces." },
+              { file: "COMMUNIKE DESIGN.jpg", title: "Communike, close", caption: "The swoosh, stitched in yellow." },
+            ],
+          },
+          more: [
+            { type: "figure", file: "IMAGE 3.jpg", title: "Deserter, the swoosh", caption: "Hatched leather against the camouflage." },
+          ],
+        },
+        {
+          id: "out",
+          title: "Site and social",
+          text: "Wordmark, packaging, social. Same mark, same red and yellow, every time, until it stops looking like decoration and starts looking like it was always there.",
+          media: { type: "figure", file: "website browser mockup.jpg", title: "everlost.online", caption: "Design as protest. The home page.", wide: true },
+          more: [
+            {
+              type: "figures",
+              cols: 2,
+              items: [
+                { file: "website browser mockup 1.jpg", title: "A love letter to the Swoosh", caption: "The about page." },
+                { file: "website browser mockup 2.jpg", title: "Tanjin Cross", caption: "A product page in the dark theme." },
+              ],
+            },
+            {
+              type: "tiles",
+              cols: 4,
+              crop: "4 / 5",
+              items: [
+                { file: "COMMUNIKE POST.jpg", title: "Communike post" },
+                { file: "POST COMMUNIKE.jpg", title: "Communike, boxed" },
+                { file: "POST 4.jpg", title: "Deserter post" },
+                { file: "DESETER SALE FINAL.jpg", title: "Deserter sale story" },
+              ],
+            },
+            { type: "figure", file: "Instagram Post Story Mockup.jpg", title: "The feed", caption: "Posts and stories together.", wide: true },
+          ],
+        },
+        {
+          id: "film",
+          title: "The film",
+          text: "A separate collaboration handled the ad shoot for the shoe, filming it the way you'd film a real Nike release rather than a personal project.",
+          media: {
+            type: "videos",
+            wide: true,
+            items: [
+              { file: "final export 4k.mp4", title: "Ad film", caption: "35 seconds.", ratio: "4096 / 1716" },
+            ],
+          },
+        },
+      ],
+    },
   },
   {
     id: "kuro",
@@ -329,12 +421,34 @@ export const PROJECTS = [
     medium: "Branding",
     desc: "Brand identity and packaging for a 450ml travel blender. Wordmark, product renders, and the diagrams that show how it's built and how it ships.",
     cover: "Kuro — Portable Blender.jpg",
-    layout: [
-      { type: "hero", file: "Kuro — Portable Blender.jpg" },
-      { type: "text", body: "A travel blender only works if you stop noticing it's there. The identity follows the same idea: one mark, one bottle shape, nothing extra hanging off it." },
-      { type: "pair", files: ["kuro-overview.png", "kuro-parts.jpg"] },
-      { type: "hero", file: "kuro-packaging.jpg" },
-    ],
+    brief: {
+      tagline: "Blend. Drink. Go.",
+      facts: [
+        ["Brand", "Kuro"],
+        ["Product", "450 ml portable blender"],
+        ["Scope", "Identity, packaging, product renders"],
+      ],
+      chapters: [
+        {
+          id: "mark",
+          title: "One mark, one bottle",
+          text: "A travel blender only works if you stop noticing it's there. The identity follows the same idea: one mark, one bottle shape, nothing extra hanging off it.",
+          media: { type: "figure", file: "kuro-overview.png", title: "Brand sheet", caption: "The product, its parts, colourways and specs on one page." },
+        },
+        {
+          id: "build",
+          title: "How it comes apart",
+          text: "The bottle splits into a cup and a blade base with the lid on top. The renders show it open, so the build is clear before anyone buys it.",
+          media: { type: "figure", file: "kuro-parts.jpg", title: "Parts", caption: "Cup, blade base and lid." },
+        },
+        {
+          id: "box",
+          title: "How it ships",
+          text: "The box is one die-cut sleeve. The wordmark runs up the side, with the instructions and the specs on the panels around it.",
+          media: { type: "figure", file: "kuro-packaging.jpg", title: "Packaging dieline", caption: "The flat layout, before folding." },
+        },
+      ],
+    },
   },
   {
     id: "mancraft",
@@ -344,11 +458,39 @@ export const PROJECTS = [
     medium: "Branding",
     desc: "A listing card system and product branding for a welding machine, built for a Russian online marketplace. Compact, cooling, and pro versions, each with its own spec card.",
     cover: "Mancraft.jpg",
-    layout: [
-      { type: "hero", file: "Mancraft.jpg" },
-      { type: "text", body: "Three versions, one card format. Spec, price, and logo sit in the same place on every card, so a buyer is comparing the products and not fighting three different layouts." },
-      { type: "quad", files: ["mancraft-pro.jpg", "mancraft-compact.jpg", "mancraft-cooling.jpg", "mancraft-weight.jpg"] },
-    ],
+    brief: {
+      tagline: "One card format, every spec in its place.",
+      facts: [
+        ["Brand", "Mancraft"],
+        ["Product", "MIG / MAG / TIG welding machine"],
+        ["Market", "Russian online marketplace"],
+        ["Scope", "Listing cards, product branding"],
+      ],
+      chapters: [
+        {
+          id: "lead",
+          title: "The lead card",
+          text: "The first card has to do the selling at thumbnail size. Name, weld types, voltage and current all sit around the machine, big enough to read in a search result.",
+          media: { type: "figure", file: "Mancraft.jpg", title: "Lead card", caption: "The one a buyer sees first." },
+        },
+        {
+          id: "system",
+          title: "One format, card after card",
+          text: "Every card after that takes a single point: size, cooling, the kit, the weight. Headline, figure and logo sit in the same place each time, so a buyer is comparing the products and not fighting the layout.",
+          media: {
+            type: "tiles",
+            cols: 2,
+            crop: "1 / 1",
+            items: [
+              { file: "mancraft-compact.jpg", title: "Size", caption: "Light and compact, with dimensions." },
+              { file: "mancraft-cooling.jpg", title: "Cooling", caption: "The fan and the thermal sensor." },
+              { file: "mancraft-pro.jpg", title: "The kit", caption: "Professional equipment, shown with gloves and mask." },
+              { file: "mancraft-weight.jpg", title: "Weight and current", caption: "5.3 kg, 220 A." },
+            ],
+          },
+        },
+      ],
+    },
   },
   {
     id: "mary-jane-festival",
@@ -358,13 +500,56 @@ export const PROJECTS = [
     medium: "Branding",
     desc: "Festival branding for a cannabis culture event. Two mascots, a leaf and a bong, both grinning, carrying one loose hand-drawn identity across posters and merch.",
     cover: "posyer mj 2.jpg",
-    layout: [
-      { type: "hero", file: "posyer mj 2.jpg" },
-      { type: "text", body: "Two mascots carry the whole thing, drawn loose enough that they still hold up after a bad photocopy or a cheap print run." },
-      { type: "pair", files: ["Artboard 1.jpg", "3.jpg"] },
-      { type: "pair", files: ["BAG MOCK UP.png", "BAG 12.png"] },
-      { type: "hero", file: "Box_110x60x30.png" },
-    ],
+    brief: {
+      tagline: "Two mascots, one loose line.",
+      facts: [
+        ["Event", "Mary Jane Festival"],
+        ["Type", "Festival branding"],
+        ["Scope", "Mascots, poster, bags, packaging"],
+      ],
+      chapters: [
+        {
+          id: "mascots",
+          title: "The mascots",
+          text: "Two mascots carry the whole thing, drawn loose enough that they still hold up after a bad photocopy or a cheap print run.",
+          media: {
+            type: "figures",
+            cols: 2,
+            items: [
+              { file: "posyer mj 2.jpg", title: "The leaf", caption: "Festival poster." },
+              { file: "Artboard 1.jpg", title: "The bong", caption: "Badge lockup with the festival name." },
+            ],
+          },
+        },
+        {
+          id: "bags",
+          title: "On bags",
+          text: "The bags come first, because they are what people carry around the site. A paper tote takes the poster artwork whole, and a drawstring bag gets its own lettering.",
+          media: {
+            type: "tiles",
+            cols: 2,
+            crop: "1 / 1",
+            items: [
+              { file: "BAG MOCK UP.png", title: "Paper tote" },
+              { file: "BAG 12.png", title: "Drawstring bag" },
+            ],
+          },
+        },
+        {
+          id: "packaging",
+          title: "On packaging",
+          text: "Then the things that leave with you: a flower box and a takeaway carrier, both in kraft, with the mascots printed straight onto the card.",
+          media: {
+            type: "figures",
+            cols: 2,
+            items: [
+              { file: "Box_110x60x30.png", title: "Flower box" },
+              { file: "3.jpg", title: "Carrier and bag" },
+            ],
+          },
+        },
+      ],
+    },
   },
   {
     id: "childhood",

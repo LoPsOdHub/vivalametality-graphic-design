@@ -8,7 +8,9 @@
    Chapter  { id, title, text (string or array of paragraphs), media, more?, note?, after? }
    Media    { type: "figure",  file, title, caption, wide? }
             { type: "figures", cols, items: [{ file, title, caption }], wide?: [fr, fr] }
-            { type: "tiles",   cols, items: [...] }         (square-ish tiles)
+            { type: "tiles",   cols, items: [...], crop?: "w / h" }
+   `crop` (on tiles or figures) crops every image in the group to one
+   aspect ratio, so mixed-shape shots still sit as an even grid.
             { type: "swatches", items: [{ name, hex, rgb, role }] }
             { type: "specs",   head, cols: [...], rows: [[...]] }
             { type: "videos",  items: [{ file, poster, title, caption, ratio?, loop? }], wide? }
@@ -22,7 +24,7 @@
    js/lightbox.js picks up — it never needs to know about chapters.
    ========================================================================== */
 
-import { mediaSrc } from "./works-data.js?v=14";
+import { mediaSrc } from "./works-data.js?v=15";
 import { initLightbox } from "./lightbox.js?v=2";
 
 function h(tag, className, text) {
@@ -48,7 +50,7 @@ function renderFigure(project, item, extraClass = "") {
 
   const img = document.createElement("img");
   img.src = a.href;
-  img.alt = [item.title, item.caption].filter(Boolean).join(". ");
+  img.alt = [item.title, item.caption].filter(Boolean).join(". ") || project.title;
   img.loading = "lazy";
   img.decoding = "async";
   a.appendChild(img);
@@ -67,6 +69,10 @@ function renderFigures(project, media, modifier) {
   const grid = h("div", `bgrid bgrid--${modifier}`);
   grid.style.setProperty("--cols", String(media.cols || media.items.length));
   if (media.wide) grid.style.setProperty("--tracks", media.wide.map((n) => `${n}fr`).join(" "));
+  if (media.crop) {
+    grid.classList.add("bgrid--crop");
+    grid.style.setProperty("--ratio", media.crop);
+  }
   media.items.forEach((item) => grid.appendChild(renderFigure(project, item)));
   return grid;
 }
