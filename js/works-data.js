@@ -129,6 +129,7 @@ export const PROJECTS = [
     dir: "Branding/Miro Drink",
     title: "MIRO Drink",
     medium: "Branding",
+    rev: 3,
     desc: "Brand identity, packaging and campaign for a sparkling ginger lemon drink. A grinning face mark, a hand-drawn alphabet and a painted landscape of stepped temples carry one voice from the can to the poster to the screen.",
     cover: "cover.webp",
     brief: {
@@ -217,10 +218,17 @@ export const PROJECTS = [
               wide: [0.7, 1.3],
               items: [
                 { file: "can-cutout.webp", title: "Ginger Lemon, cut out", caption: "The slim can on a transparent background." },
-                { file: "mockup-two-cans.webp", title: "Front and back", caption: "355 mL cans, with the nutrition and benefits panel on the back." },
+                { file: "mockup-two-cans.webp", title: "Front and back", caption: "Two cans, with the nutrition and benefits panel on the back." },
               ],
             },
-            { type: "figure", file: "packaging-flats.webp", title: "Flat artwork", caption: "Front and back panels for both can formats.", wide: true },
+            {
+              type: "figures",
+              cols: 2,
+              items: [
+                { file: "flat-front.webp", title: "Flat artwork, front", caption: "The face, the flavour plaque and the landscape." },
+                { file: "flat-back.webp", title: "Flat artwork, back", caption: "Wordmark, benefits and the nutrition panel." },
+              ],
+            },
             {
               type: "figures",
               cols: 2,
@@ -606,7 +614,10 @@ export function categoryUrl(categoryId) {
  *  segment is encoded separately — encoding the "/" inside project.dir
  *  would turn it into a literal, broken "UX%20UI%2FUbit...". */
 export function mediaSrc(project, file) {
-  return `assets/portfolio/${project.dir}/${file}`.split("/").map(encodeURIComponent).join("/");
+  const path = `assets/portfolio/${project.dir}/${file}`.split("/").map(encodeURIComponent).join("/");
+  // `rev` is bumped whenever a project's files are replaced under the same
+  // name, so browsers don't keep showing the old cached image.
+  return project.rev ? `${path}?r=${project.rev}` : path;
 }
 
 /** A project's cover/thumbnail, used everywhere except its own page. */

@@ -24,7 +24,7 @@
    js/lightbox.js picks up — it never needs to know about chapters.
    ========================================================================== */
 
-import { mediaSrc } from "./works-data.js?v=15";
+import { mediaSrc } from "./works-data.js?v=16";
 import { initLightbox } from "./lightbox.js?v=2";
 
 function h(tag, className, text) {
