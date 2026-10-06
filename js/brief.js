@@ -1,30 +1,38 @@
 /* ==========================================================================
-   Structured brief renderer — used by works-page.js for any project that
-   has a `brief` in js/works-data.js (MIRO Drink) instead of a flat gallery.
+   Structured brief renderer — used by works-page.js for every project that
+   has a `brief` in js/works-data.js.
 
-   A brief is: a cover + facts + chapter index, then one section per
-   chapter (numbered, in work-process order), then an inline PDF viewer.
+   The whole page sits on ONE three-column grid with one gap (see BRIEF in
+   css/style.css). Nothing is placed off it:
+     intro      cover in column 1, tagline / facts / index across 2-3
+     chapter    number + title in column 1, text across 2-3
+     blocks     either a ROW of exactly three equal cells, or a SINGLE
+                piece across all three columns
 
-   Chapter  { id, title, text (string or array of paragraphs), media, more?, note?, after? }
-   Media    { type: "figure",  file, title, caption, wide? }
-            { type: "figures", cols, items: [{ file, title, caption }], wide?: [fr, fr] }
-            { type: "tiles",   cols, items: [...], crop?: "w / h" }
-   `crop` (on tiles or figures) crops every image in the group to one
-   aspect ratio, so mixed-shape shots still sit as an even grid.
-            { type: "swatches", items: [{ name, hex, rgb, role }] }
-            { type: "specs",   head, cols: [...], rows: [[...]] }
-            { type: "videos",  items: [{ file, poster, title, caption, ratio?, loop? }], wide? }
+   Chapter  { id, title, text (string or array of paragraphs), blocks: [...] }
+   Block    { row: "w / h", fit?: "cover", items: [cell, cell, cell] }
+              every cell in a row shares the row's aspect ratio, so tops,
+              bottoms and captions line up. Images are fitted whole inside
+              their cell ("contain") unless the row says fit: "cover".
+              cell = { file, title?, caption? }                image
+                   | { video, poster?, title?, caption? }      video
+                   | { text: { head?, quote?, body? }, span? } text cell,
+                     span: 2 lets it take two of the three columns
+            { single: file, title?, caption? }       full-width image
+            { video: file, poster?, title?, caption?, ratio?, loop? }
+            { swatches: [{ name, hex, rgb, role }] }
+            { specs: { head, cols: [...], rows: [[...]] } }
+            { note: { head, body } }
+
    `loop: true` makes a video a silent, looping animation that plays while
    it is on screen (see makeLooping) instead of a click-to-play clip.
    `brief.film` is one such looping video pinned beside the whole page.
-   `more` and `after` are extra media blocks shown after `media`, and after
-   the chapter note, respectively.
 
    Every image is wrapped in a link carrying data-zoom, which
    js/lightbox.js picks up — it never needs to know about chapters.
    ========================================================================== */
 
-import { mediaSrc } from "./works-data.js?v=16";
+import { mediaSrc } from "./works-data.js?v=18";
 import { initLightbox } from "./lightbox.js?v=2";
 
 function h(tag, className, text) {
@@ -36,9 +44,17 @@ function h(tag, className, text) {
 
 const pad2 = (n) => String(n).padStart(2, "0");
 
-/* ---- Figures: a click-to-zoom image with a title and caption ---- */
+function caption(item) {
+  if (!item.title && !item.caption) return null;
+  const cap = h("figcaption", "bfig__cap");
+  if (item.title) cap.appendChild(h("strong", "bfig__title", item.title));
+  if (item.caption) cap.appendChild(h("span", "bfig__text", item.caption));
+  return cap;
+}
 
-function renderFigure(project, item, extraClass = "") {
+/* ---- Image: a click-to-zoom plate with a title and caption ---- */
+
+function renderImage(project, item, extraClass = "") {
   const fig = h("figure", `bfig ${extraClass}`.trim());
 
   const a = h("a", "bfig__link");
@@ -48,45 +64,129 @@ function renderFigure(project, item, extraClass = "") {
   a.dataset.caption = item.caption || "";
   a.setAttribute("aria-label", `${item.title || project.title}: open larger`);
 
+  // The page shows a light copy from the project's _t/ folder (same name
+  // + ".webp", at most 1400px wide); the link above keeps the original for
+  // the lightbox. Add a file to a brief => add its copy to _t/ as well.
   const img = document.createElement("img");
-  img.src = a.href;
+  img.src = mediaSrc(project, `_t/${item.file}.webp`);
   img.alt = [item.title, item.caption].filter(Boolean).join(". ") || project.title;
   img.loading = "lazy";
   img.decoding = "async";
   a.appendChild(img);
   fig.appendChild(a);
 
-  if (item.title || item.caption) {
-    const cap = h("figcaption", "bfig__cap");
-    if (item.title) cap.appendChild(h("strong", "bfig__title", item.title));
-    if (item.caption) cap.appendChild(h("span", "bfig__text", item.caption));
-    fig.appendChild(cap);
-  }
+  const cap = caption(item);
+  if (cap) fig.appendChild(cap);
   return fig;
 }
 
-function renderFigures(project, media, modifier) {
-  const grid = h("div", `bgrid bgrid--${modifier}`);
-  grid.style.setProperty("--cols", String(media.cols || media.items.length));
-  if (media.wide) grid.style.setProperty("--tracks", media.wide.map((n) => `${n}fr`).join(" "));
-  if (media.crop) {
-    grid.classList.add("bgrid--crop");
-    grid.style.setProperty("--ratio", media.crop);
+/* ---- Videos ---- */
+
+const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+// A looping animation: muted (browsers only autoplay muted video), plays
+// whenever at least a third of it is on screen and pauses when it isn't.
+// Controls stay on, so anyone can pause it, scrub, or turn the sound on.
+// With reduced motion requested it never starts by itself.
+function makeLooping(video) {
+  video.classList.add("bfig__video--loop");
+  video.muted = true;
+  video.loop = true;
+  video.preload = "metadata";
+  if (reduceMotion.matches || !("IntersectionObserver" in window)) return;
+  let userPaused = false;
+  let auto = false;
+  video.addEventListener("pause", () => {
+    if (!auto) userPaused = true;
+  });
+  video.addEventListener("play", () => {
+    userPaused = false;
+  });
+  new IntersectionObserver(
+    ([entry]) => {
+      auto = true;
+      if (entry.isIntersecting) {
+        if (!userPaused) video.play().catch(() => {});
+      } else {
+        video.pause();
+      }
+      setTimeout(() => {
+        auto = false;
+      }, 0);
+    },
+    { threshold: 0.35 }
+  ).observe(video);
+}
+
+function renderVideo(project, item, extraClass = "") {
+  const fig = h("figure", `bfig bfig--video ${extraClass}`.trim());
+  const video = document.createElement("video");
+  video.className = "bfig__video";
+  video.src = mediaSrc(project, item.video);
+  if (item.poster) video.poster = mediaSrc(project, item.poster);
+  video.controls = true;
+  video.playsInline = true;
+  // with no poster, fetch just enough to show the first frame instead of a black box
+  video.preload = item.poster ? "none" : "metadata";
+  video.setAttribute("aria-label", item.title || project.title);
+  if (item.ratio) video.style.aspectRatio = item.ratio;
+  if (item.loop) {
+    makeLooping(video);
+  } else {
+    // only one click-to-play clip at a time
+    video.addEventListener("play", () => {
+      document.querySelectorAll(".bfig__video:not(.bfig__video--loop)").forEach((v) => {
+        if (v !== video) v.pause();
+      });
+    });
   }
-  media.items.forEach((item) => grid.appendChild(renderFigure(project, item)));
-  return grid;
+  fig.appendChild(video);
+
+  const cap = caption(item);
+  if (cap) fig.appendChild(cap);
+  return fig;
+}
+
+/* ---- Text cell: a short piece of copy holding a grid cell ---- */
+
+function renderTextCell(item) {
+  const cell = h("div", "btext");
+  if (item.span === 2) cell.classList.add("btext--span2");
+  const t = item.text;
+  if (t.head) cell.appendChild(h("h3", "btext__head", t.head));
+  if (t.quote) cell.appendChild(h("p", "btext__quote", t.quote));
+  if (t.body) cell.appendChild(h("p", "btext__body", t.body));
+  return cell;
+}
+
+/* ---- Row: exactly three columns of equal cells ---- */
+
+function renderRow(project, block) {
+  const row = h("div", "brow");
+  row.style.setProperty("--ratio", block.row);
+  if (block.fit === "cover") row.classList.add("brow--cover");
+
+  const units = block.items.reduce((n, item) => n + (item.span || 1), 0);
+  if (units !== 3) console.warn(`brief: a row in "${project.id}" fills ${units} of 3 columns`, block);
+
+  block.items.forEach((item) => {
+    if (item.text) row.appendChild(renderTextCell(item));
+    else if (item.video) row.appendChild(renderVideo(project, item, "bcell"));
+    else row.appendChild(renderImage(project, item, "bcell"));
+  });
+  return row;
 }
 
 /* ---- Swatches: click to copy the hex ---- */
 
-function renderSwatches(media) {
+function renderSwatches(items) {
   const wrap = h("div", "bswatches");
   const status = h("p", "bswatches__status");
   status.setAttribute("role", "status");
   status.setAttribute("aria-live", "polite");
 
   const list = h("ul", "bswatches__list");
-  media.items.forEach((s) => {
+  items.forEach((s) => {
     const li = h("li", "bswatch");
     const btn = h("button", "bswatch__btn");
     btn.type = "button";
@@ -129,14 +229,14 @@ function renderSwatches(media) {
 
 /* ---- Specs table ---- */
 
-function renderSpecs(media) {
+function renderSpecs(specs) {
   const wrap = h("div", "bspecs");
-  if (media.head) wrap.appendChild(h("h3", "bspecs__head", media.head));
+  if (specs.head) wrap.appendChild(h("h3", "bspecs__head", specs.head));
   const scroller = h("div", "bspecs__scroll");
   const table = h("table", "bspecs__table");
   const thead = h("thead");
   const hr = h("tr");
-  media.cols.forEach((c) => {
+  specs.cols.forEach((c) => {
     const th = h("th", null, c);
     th.scope = "col";
     hr.appendChild(th);
@@ -144,7 +244,7 @@ function renderSpecs(media) {
   thead.appendChild(hr);
   table.appendChild(thead);
   const tbody = h("tbody");
-  media.rows.forEach((r) => {
+  specs.rows.forEach((r) => {
     const tr = h("tr");
     r.forEach((cell, i) => {
       const td = h(i === 0 ? "th" : "td", null, cell);
@@ -159,127 +259,52 @@ function renderSpecs(media) {
   return wrap;
 }
 
-/* ---- Videos ---- */
-
-const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-
-// A looping animation: muted (browsers only autoplay muted video), plays
-// whenever at least a third of it is on screen and pauses when it isn't.
-// Controls stay on, so anyone can pause it, scrub, or turn the sound on.
-// With reduced motion requested it never starts by itself.
-function makeLooping(video) {
-  video.classList.add("bfig__video--loop");
-  video.muted = true;
-  video.loop = true;
-  video.preload = "metadata";
-  if (reduceMotion.matches || !("IntersectionObserver" in window)) return;
-  let userPaused = false;
-  let auto = false;
-  video.addEventListener("pause", () => {
-    if (!auto) userPaused = true;
-  });
-  video.addEventListener("play", () => {
-    userPaused = false;
-  });
-  new IntersectionObserver(
-    ([entry]) => {
-      auto = true;
-      if (entry.isIntersecting) {
-        if (!userPaused) video.play().catch(() => {});
-      } else {
-        video.pause();
-      }
-      setTimeout(() => {
-        auto = false;
-      }, 0);
-    },
-    { threshold: 0.35 }
-  ).observe(video);
+function renderNote(note) {
+  const el = h("aside", "bnote");
+  el.appendChild(h("h3", "bnote__head", note.head));
+  el.appendChild(h("p", "bnote__body", note.body));
+  return el;
 }
 
-function renderVideos(project, media) {
-  const grid = h("div", `bgrid bgrid--videos${media.wide ? " bgrid--video-wide" : ""}`);
-  media.items.forEach((item) => {
-    const fig = h("figure", "bfig bfig--video");
-    const video = document.createElement("video");
-    video.className = "bfig__video";
-    video.src = mediaSrc(project, item.file);
-    if (item.poster) video.poster = mediaSrc(project, item.poster);
-    video.controls = true;
-    video.playsInline = true;
-    video.preload = "none";
-    video.setAttribute("aria-label", item.title);
-    if (item.ratio) video.style.aspectRatio = item.ratio;
-    if (item.loop) {
-      makeLooping(video);
-    } else {
-      video.addEventListener("play", () => {
-        document.querySelectorAll(".bfig__video:not(.bfig__video--loop)").forEach((v) => {
-          if (v !== video) v.pause();
-        });
-      });
-    }
-    fig.appendChild(video);
-
-    const cap = h("figcaption", "bfig__cap");
-    cap.appendChild(h("strong", "bfig__title", item.title));
-    cap.appendChild(h("span", "bfig__text", item.caption));
-    fig.appendChild(cap);
-    grid.appendChild(fig);
-  });
-  return grid;
-}
-
-function renderMedia(project, media) {
-  switch (media.type) {
-    case "figure":
-      return renderFigure(project, media, media.wide ? "bfig--wide" : "");
-    case "figures":
-      return renderFigures(project, media, "figures");
-    case "tiles":
-      return renderFigures(project, media, "tiles");
-    case "swatches":
-      return renderSwatches(media);
-    case "specs":
-      return renderSpecs(media);
-    case "videos":
-      return renderVideos(project, media);
-    default:
-      return document.createDocumentFragment();
-  }
+function renderBlock(project, block) {
+  if (block.row) return renderRow(project, block);
+  if (block.single) return renderImage(project, { ...block, file: block.single }, "bsingle");
+  if (block.video) return renderVideo(project, block, "bsingle");
+  if (block.swatches) return renderSwatches(block.swatches);
+  if (block.specs) return renderSpecs(block.specs);
+  if (block.note) return renderNote(block.note);
+  return document.createDocumentFragment();
 }
 
 /* ---- Chapters ---- */
+
+function chapterTop(id, num, titleText, paragraphs) {
+  const top = h("div", "bchapter__top");
+
+  const head = h("header", "bchapter__head");
+  head.appendChild(h("span", "stamp bchapter__num", num));
+  const title = h("h2", "bchapter__title", titleText);
+  title.id = `${id}-title`;
+  head.appendChild(title);
+  top.appendChild(head);
+
+  const copy = h("div", "bchapter__copy");
+  paragraphs.forEach((para) => copy.appendChild(h("p", "bchapter__text", para)));
+  top.appendChild(copy);
+  return { top, copy };
+}
 
 function renderChapter(project, chapter, index) {
   const section = h("section", "bchapter");
   section.id = chapter.id;
   section.setAttribute("aria-labelledby", `${chapter.id}-title`);
 
-  const head = h("header", "bchapter__head");
-  head.appendChild(h("span", "stamp bchapter__num", pad2(index + 1)));
-  const title = h("h2", "bchapter__title", chapter.title);
-  title.id = `${chapter.id}-title`;
-  head.appendChild(title);
-  section.appendChild(head);
+  section.appendChild(chapterTop(chapter.id, pad2(index + 1), chapter.title, [].concat(chapter.text)).top);
 
-  [].concat(chapter.text).forEach((para) => section.appendChild(h("p", "bchapter__text", para)));
-
-  const body = h("div", "bchapter__body");
-  body.appendChild(renderMedia(project, chapter.media));
-  (chapter.more || []).forEach((m) => body.appendChild(renderMedia(project, m)));
-  section.appendChild(body);
-
-  if (chapter.note) {
-    const note = h("aside", "bnote");
-    note.appendChild(h("h3", "bnote__head", chapter.note.head));
-    note.appendChild(h("p", "bnote__body", chapter.note.body));
-    section.appendChild(note);
-  }
-  if (chapter.after && chapter.after.length) {
-    const after = h("div", "bchapter__body");
-    chapter.after.forEach((m) => after.appendChild(renderMedia(project, m)));
-    section.appendChild(after);
+  if (chapter.blocks && chapter.blocks.length) {
+    const body = h("div", "bchapter__body");
+    chapter.blocks.forEach((b) => body.appendChild(renderBlock(project, b)));
+    section.appendChild(body);
   }
   return section;
 }
@@ -292,7 +317,7 @@ function renderIntro(project, brief) {
   // With a pinned film the film is the lead image, so there's no cover here.
   if (!brief.film) {
     intro.appendChild(
-      renderFigure(project, { file: project.cover, title: project.title, caption: brief.tagline }, "bintro__cover")
+      renderImage(project, { file: project.cover, title: project.title, caption: brief.tagline }, "bintro__cover")
     );
   }
 
@@ -341,20 +366,14 @@ function renderIntro(project, brief) {
 
 function renderBook(project, pdf) {
   const src = mediaSrc(project, pdf.file);
-  const section = h("section", "bbook");
+  const section = h("section", "bchapter bbook");
   section.id = "brand-book";
   section.setAttribute("aria-labelledby", "brand-book-title");
 
-  const head = h("header", "bchapter__head");
-  head.appendChild(h("span", "stamp bchapter__num", "PDF"));
-  const title = h("h2", "bchapter__title", "The full brand book");
-  title.id = "brand-book-title";
-  head.appendChild(title);
-  section.appendChild(head);
-
-  section.appendChild(
-    h("p", "bchapter__text", `All ${pdf.pages} pages, from logo rules to campaign frames. Read it here, or take it with you.`)
-  );
+  const { top, copy } = chapterTop("brand-book", "PDF", "The full brand book", [
+    `All ${pdf.pages} pages, from logo rules to campaign frames. Read it here, or take it with you.`,
+  ]);
+  section.appendChild(top);
 
   const actions = h("div", "bbook__actions");
   const toggle = h("button", "bbook__btn bbook__btn--primary", "Read it here");
@@ -372,7 +391,7 @@ function renderBook(project, pdf) {
   dl.download = "";
 
   actions.append(toggle, open, dl);
-  section.appendChild(actions);
+  copy.appendChild(actions);
 
   const viewer = h("div", "bbook__viewer");
   viewer.id = "bookViewer";
@@ -415,10 +434,8 @@ function renderFilm(project, film) {
   makeLooping(video);
   fig.appendChild(video);
 
-  const cap = h("figcaption", "bfig__cap");
-  cap.appendChild(h("strong", "bfig__title", film.title));
-  cap.appendChild(h("span", "bfig__text", film.caption));
-  fig.appendChild(cap);
+  const cap = caption(film);
+  if (cap) fig.appendChild(cap);
   return fig;
 }
 

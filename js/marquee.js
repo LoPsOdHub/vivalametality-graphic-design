@@ -4,7 +4,7 @@
    projects in js/works-data.js; this file never needs to change.
    ========================================================================== */
 
-import { PROJECTS, projectUrl, coverSrc } from "./works-data.js?v=16";
+import { PROJECTS, projectUrl, coverSrc } from "./works-data.js?v=18";
 
 const track = document.getElementById("marqueeTrack");
 

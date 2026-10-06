@@ -35,7 +35,7 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
-import { PROJECTS, projectUrl, coverSrc } from "./works-data.js?v=16";
+import { PROJECTS, projectUrl, coverSrc } from "./works-data.js?v=18";
 
 const CONFIG = {
   modelPath: "assets/models/TEST RUN 1903.glb",
