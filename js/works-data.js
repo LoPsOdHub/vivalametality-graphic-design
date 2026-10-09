@@ -671,6 +671,53 @@ export const PROJECTS = [
     },
   },
   {
+    id: "publication-design",
+    category: "designs",
+    dir: "Designs/Publication Design",
+    title: "Publication Design",
+    medium: "Designs",
+    desc: "A paperback cover for Under the Wave, a short story by Lauren Groff. Front, spine and back are built as one sheet of torn paper: a pale sky, a red ground, and two figures standing on the line between them.",
+    cover: "cover.webp",
+    brief: {
+      tagline: "A cover made of torn paper.",
+      facts: [
+        ["Title", "Under the Wave"],
+        ["Author", "Lauren Groff"],
+        ["Format", "Paperback: front, spine, back"],
+        ["Type", "Publication design"],
+      ],
+      chapters: [
+        {
+          id: "cover",
+          title: "Front and back",
+          text: [
+            "A white horizon splits the front in two. Above it is a pale teal sky with two birds on a wire. Below it is a red ground. A woman and a child stand on the line, and their shadows run down into the red.",
+            "The back keeps the same two halves and gives the calm upper one to the text.",
+          ],
+          blocks: [
+            {
+              row: "1226 / 2000",
+              items: [
+                { file: "cover-front.webp", title: "Front cover" },
+                { file: "cover-back.webp", title: "Back cover" },
+                { text: { head: "Torn, not cut", body: "Every edge on the cover is a tear. Strips of turquoise rip across the title, so the words \"Under the Wave\" sit partly under one." } },
+              ],
+            },
+          ],
+        },
+        {
+          id: "jacket",
+          title: "The whole jacket",
+          text: "Front, spine and back are one continuous sheet. The red ground and the torn sky carry straight across the spine, which holds the author, the title and the series line.",
+          blocks: [
+            { single: "jacket-spread.webp", title: "Full jacket", caption: "Back, spine and front, flat." },
+            { single: "mockup.webp", title: "Mockup", caption: "Back and front as a printed book." },
+          ],
+        },
+      ],
+    },
+  },
+  {
     id: "childhood",
     category: "designs",
     dir: "Designs/Childhood",
